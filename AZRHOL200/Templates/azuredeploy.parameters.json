@@ -2,5 +2,17 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
+        "nicazrhol200Name": {
+            "value": "nicazrhol200"
+        },
+        "pipazrhol200DnsName": {
+            "value": "pipazrhol200dnsname"
+        },
+        "vmazrhol200Name": {
+            "value": "vmazrhol200"
+        },
+        "vmazrhol200AdminUserName": {
+            "value": "martijn"
+        }
     }
 }
