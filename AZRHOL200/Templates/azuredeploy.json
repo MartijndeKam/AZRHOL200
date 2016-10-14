@@ -267,34 +267,7 @@
           ]
         }
       },
-        "resources": [
-            {
-                "name": "lfsinstall",
-                "type": "extensions",
-                "location": "[resourceGroup().location]",
-                "apiVersion": "2015-06-15",
-                "dependsOn": [
-                    "[concat('Microsoft.Compute/virtualMachines/', parameters('vmazrhol200Name'))]"
-                ],
-                "tags": {
-                    "displayName": "lfsinstall"
-                },
-                "properties": {
-                    "publisher": "Microsoft.Compute",
-                    "type": "CustomScriptExtension",
-                    "typeHandlerVersion": "1.4",
-                    "autoUpgradeMinorVersion": true,
-                    "settings": {
-                        "fileUris": [
-                            "[concat(parameters('_artifactsLocation'), '/', variables('lfsinstallScriptFolder'), '/', variables('lfsinstallScriptFileName'), parameters('_artifactsLocationSasToken'))]"
-                        ],
-                        "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ', variables('lfsinstallScriptFolder'), '/', variables('lfsinstallScriptFileName'))]"
-                    }
-                }
-            }
-        ]
-    }
-  ],
+       ],
     "outputs": {
     }
 }
