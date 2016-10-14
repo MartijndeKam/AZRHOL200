@@ -1,48 +1,52 @@
 ﻿{
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
-    "parameters": {
-        "saazrhol200Type": {
-            "type": "string",
-            "defaultValue": "Standard_LRS",
-            "allowedValues": [
-                "Standard_LRS",
-                "Standard_ZRS",
-                "Standard_GRS",
-                "Standard_RAGRS",
-                "Premium_LRS"
-            ]
-        },
-        "nicazrhol200Name": {
-            "type": "string",
-            "minLength": 1
-        },
-        "pipazrhol200DnsName": {
-            "type": "string",
-            "minLength": 1
-        },
-        "vmazrhol200Name": {
-            "type": "string",
-            "minLength": 1
-        },
-        "vmazrhol200AdminUserName": {
-            "type": "string",
-            "minLength": 1
-        },
-        "vmazrhol200AdminPassword": {
-            "type": "securestring"
-        },
-        "vmazrhol200WindowsOSVersion": {
-            "type": "string",
-            "defaultValue": "2012-R2-Datacenter",
-            "allowedValues": [
-                "2008-R2-SP1",
-                "2012-Datacenter",
-                "2012-R2-Datacenter",
-                "Windows-Server-Technical-Preview"
-            ]
-        }
+  "parameters": {
+    "saazrhol200Type": {
+      "type": "string",
+      "defaultValue": "Standard_LRS",
+      "allowedValues": [
+        "Standard_LRS",
+        "Standard_ZRS",
+        "Standard_GRS",
+        "Standard_RAGRS",
+        "Premium_LRS"
+      ]
     },
+    "nicazrhol200Name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "pipazrhol200DnsName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "vmazrhol200Name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "vmazrhol200AdminUserName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "vmazrhol200AdminPassword": {
+      "type": "securestring"
+    },
+    "networkSecurityGroups_NSGAZRHOL200_name": {
+      "defaultValue": "NSGAZRHOL200",
+      "type": "String"
+    },
+    "vmazrhol200WindowsOSVersion": {
+      "type": "string",
+      "defaultValue": "2012-R2-Datacenter",
+      "allowedValues": [
+        "2008-R2-SP1",
+        "2012-Datacenter",
+        "2012-R2-Datacenter",
+        "Windows-Server-Technical-Preview"
+      ]
+    }
+  },
     "variables": {
         "saazrhol200Name": "[concat('saazrhol200', 'martijn')]",
         "vnetazrhol200Prefix": "10.0.0.0/16",
@@ -62,143 +66,178 @@
         "vmazrhol200StorageAccountContainerName": "vhds",
         "vmazrhol200NicName": "[concat(parameters('vmazrhol200Name'), 'NetworkInterface')]"
     },
-    "resources": [
-        {
-            "name": "[variables('saazrhol200Name')]",
-            "type": "Microsoft.Storage/storageAccounts",
-            "location": "[resourceGroup().location]",
-            "apiVersion": "2015-06-15",
-            "dependsOn": [ ],
-            "tags": {
-                "displayName": "saazrhol200"
-            },
-            "properties": {
-                "accountType": "[parameters('saazrhol200Type')]"
-            }
+  "resources": [
+    {
+      "name": "[variables('saazrhol200Name')]",
+      "type": "Microsoft.Storage/storageAccounts",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2015-06-15",
+      "dependsOn": [ ],
+      "tags": {
+        "displayName": "saazrhol200"
+      },
+      "properties": {
+        "accountType": "[parameters('saazrhol200Type')]"
+      }
+    },
+    {
+      "name": "vnetazrhol200",
+      "type": "Microsoft.Network/virtualNetworks",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2015-06-15",
+      "dependsOn": [ ],
+      "tags": {
+        "displayName": "vnetazrhol200"
+      },
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('vnetazrhol200Prefix')]"
+          ]
         },
-        {
-            "name": "vnetazrhol200",
-            "type": "Microsoft.Network/virtualNetworks",
-            "location": "[resourceGroup().location]",
-            "apiVersion": "2015-06-15",
-            "dependsOn": [ ],
-            "tags": {
-                "displayName": "vnetazrhol200"
-            },
+        "subnets": [
+          {
+            "name": "[variables('vnetazrhol200Subnet1Name')]",
             "properties": {
-                "addressSpace": {
-                    "addressPrefixes": [
-                        "[variables('vnetazrhol200Prefix')]"
-                    ]
-                },
-                "subnets": [
-                    {
-                        "name": "[variables('vnetazrhol200Subnet1Name')]",
-                        "properties": {
-                            "addressPrefix": "[variables('vnetazrhol200Subnet1Prefix')]"
-                        }
-                    },
-                    {
-                        "name": "[variables('vnetazrhol200Subnet2Name')]",
-                        "properties": {
-                            "addressPrefix": "[variables('vnetazrhol200Subnet2Prefix')]"
-                        }
-                    }
-                ]
+              "addressPrefix": "[variables('vnetazrhol200Subnet1Prefix')]"
             }
+          },
+          {
+            "name": "[variables('vnetazrhol200Subnet2Name')]",
+            "properties": {
+              "addressPrefix": "[variables('vnetazrhol200Subnet2Prefix')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[parameters('networkInterfaces_nicazrhol200_name')]",
+      "apiVersion": "2016-03-30",
+      "location": "westeurope",
+      "tags": {
+        "displayName": "nicazrhol200"
+      },
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAddress": "10.0.0.4",
+              "privateIPAllocationMethod": "Dynamic",
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_pipazrhol200_name'))]"
+              },
+              "subnet": {
+                "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_vnetazrhol200_name')), '/subnets/Subnet-1')]"
+              }
+            }
+          }
+        ],
+        "dnsSettings": {
+          "dnsServers": [ ]
         },
-        {
-            "name": "[parameters('nicazrhol200Name')]",
-            "type": "Microsoft.Network/networkInterfaces",
-            "location": "[resourceGroup().location]",
-            "apiVersion": "2015-06-15",
-            "dependsOn": [
-                "[concat('Microsoft.Network/virtualNetworks/', 'vnetazrhol200')]",
-                "[concat('Microsoft.Network/publicIPAddresses/', variables('pipazrhol200Name'))]"
-            ],
-            "tags": {
-                "displayName": "nicazrhol200"
-            },
-            "properties": {
-                "ipConfigurations": [
-                    {
-                        "name": "ipconfig1",
-                        "properties": {
-                            "privateIPAllocationMethod": "Dynamic",
-                            "subnet": {
-                                "id": "[variables('nicazrhol200SubnetRef')]"
-                            },
-                            "publicIPAddress": {
-                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('pipazrhol200Name'))]"
-                            }
-                        }
-                    }
-                ]
-            }
-        },
-        {
-            "name": "[variables('pipazrhol200Name')]",
-            "type": "Microsoft.Network/publicIPAddresses",
-            "location": "[resourceGroup().location]",
-            "apiVersion": "2015-06-15",
-            "dependsOn": [ ],
-            "tags": {
-                "displayName": "pipazrhol200"
-            },
-            "properties": {
-                "publicIPAllocationMethod": "Dynamic",
-                "dnsSettings": {
-                    "domainNameLabel": "[parameters('pipazrhol200DnsName')]"
-                }
-            }
-        },
-        {
-            "name": "[parameters('vmazrhol200Name')]",
-            "type": "Microsoft.Compute/virtualMachines",
-            "location": "[resourceGroup().location]",
-            "apiVersion": "2015-06-15",
-          "dependsOn": [
-            "[concat('Microsoft.Storage/storageAccounts/', variables('saazrhol200Name'))]",
-            "[concat('Microsoft.Network/networkInterfaces/', parameters('nicazrhol200Name'))]"
-          ],
-            "tags": {
-                "displayName": "vmazrhol200"
-            },
-            "properties": {
-                "hardwareProfile": {
-                    "vmSize": "[variables('vmazrhol200VmSize')]"
-                },
-                "osProfile": {
-                    "computerName": "[parameters('vmazrhol200Name')]",
-                    "adminUsername": "[parameters('vmazrhol200AdminUsername')]",
-                    "adminPassword": "[parameters('vmazrhol200AdminPassword')]"
-                },
-                "storageProfile": {
-                    "imageReference": {
-                        "publisher": "[variables('vmazrhol200ImagePublisher')]",
-                        "offer": "[variables('vmazrhol200ImageOffer')]",
-                        "sku": "[parameters('vmazrhol200WindowsOSVersion')]",
-                        "version": "latest"
-                    },
-                    "osDisk": {
-                        "name": "vmazrhol200OSDisk",
-                        "vhd": {
-                            "uri": "[concat('https://', variables('saazrhol200Name'), '.blob.core.windows.net/', variables('vmazrhol200StorageAccountContainerName'), '/', variables('vmazrhol200OSDiskName'), '.vhd')]"
-                        },
-                        "caching": "ReadWrite",
-                        "createOption": "FromImage"
-                    }
-                },
-                "networkProfile": {
-                    "networkInterfaces": [
-                      {
-                        "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('nicazrhol200Name'))]"
-                      }
-                    ]
-                }
-            }
+        "enableIPForwarding": false,
+        "networkSecurityGroup": {
+          "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_NSGAZRHOL200_name'))]"
         }
-    ],
+      },
+      "resources": [ ],
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_pipazrhol200_name'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_vnetazrhol200_name'))]",
+        "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_NSGAZRHOL200_name'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "[parameters('networkSecurityGroups_NSGAZRHOL200_name')]",
+      "apiVersion": "2016-03-30",
+      "location": "westeurope",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "LFSserver",
+            "properties": {
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "63392",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 100,
+              "direction": "Inbound"
+            }
+          }
+        ]
+      },
+      "resources": [ ],
+      "dependsOn": [ ]
+    },
+    {
+      "name": "[variables('pipazrhol200Name')]",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2015-06-15",
+      "dependsOn": [ ],
+      "tags": {
+        "displayName": "pipazrhol200"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic",
+        "dnsSettings": {
+          "domainNameLabel": "[parameters('pipazrhol200DnsName')]"
+        }
+      }
+    },
+    {
+      "name": "[parameters('vmazrhol200Name')]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2015-06-15",
+      "dependsOn": [
+        "[concat('Microsoft.Storage/storageAccounts/', variables('saazrhol200Name'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', parameters('nicazrhol200Name'))]"
+      ],
+      "tags": {
+        "displayName": "vmazrhol200"
+      },
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[variables('vmazrhol200VmSize')]"
+        },
+        "osProfile": {
+          "computerName": "[parameters('vmazrhol200Name')]",
+          "adminUsername": "[parameters('vmazrhol200AdminUsername')]",
+          "adminPassword": "[parameters('vmazrhol200AdminPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[variables('vmazrhol200ImagePublisher')]",
+            "offer": "[variables('vmazrhol200ImageOffer')]",
+            "sku": "[parameters('vmazrhol200WindowsOSVersion')]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "name": "vmazrhol200OSDisk",
+            "vhd": {
+              "uri": "[concat('https://', variables('saazrhol200Name'), '.blob.core.windows.net/', variables('vmazrhol200StorageAccountContainerName'), '/', variables('vmazrhol200OSDiskName'), '.vhd')]"
+            },
+            "caching": "ReadWrite",
+            "createOption": "FromImage"
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('nicazrhol200Name'))]"
+            }
+          ]
+        }
+      }
+    }
+  ],
     "outputs": {
     }
 }
