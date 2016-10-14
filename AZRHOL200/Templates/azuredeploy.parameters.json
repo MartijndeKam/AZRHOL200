@@ -16,6 +16,9 @@
         },
         "vmazrhol200AdminPassword": {
             "value": "Ditisnatuurlijkgeenechtwachtwoord!"
+        },
+        "vnetazrhol200Name": {
+            "value": "vnetazrhol200"
         }
     }
 }

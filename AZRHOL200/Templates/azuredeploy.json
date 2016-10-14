@@ -13,6 +13,10 @@
         "Premium_LRS"
       ]
     },
+    "vnetazrhol200Name": {
+      "type": "string",
+      "minLength": 1
+    },
     "nicazrhol200Name": {
       "type": "string",
       "minLength": 1
@@ -32,7 +36,7 @@
     "vmazrhol200AdminPassword": {
       "type": "securestring"
     },
-    "networkSecurityGroups_NSGAZRHOL200_name": {
+    "NSGAZRHOL200_name": {
       "defaultValue": "NSGAZRHOL200",
       "type": "String"
     },
@@ -45,7 +49,19 @@
         "2012-R2-Datacenter",
         "Windows-Server-Technical-Preview"
       ]
-    }
+    },
+      "_artifactsLocation": {
+          "type": "string",
+          "metadata": {
+              "description": "Auto-generated container in staging storage account to receive post-build staging folder upload"
+          }
+      },
+      "_artifactsLocationSasToken": {
+          "type": "securestring",
+          "metadata": {
+              "description": "Auto-generated token to access _artifactsLocation"
+          }
+      }
   },
     "variables": {
         "saazrhol200Name": "[concat('saazrhol200', 'martijn')]",
@@ -64,7 +80,9 @@
         "vmazrhol200VnetID": "[resourceId('Microsoft.Network/virtualNetworks', 'vnetazrhol200')]",
         "vmazrhol200SubnetRef": "[concat(variables('vmazrhol200VnetID'), '/subnets/', variables('vnetazrhol200Subnet1Name'))]",
         "vmazrhol200StorageAccountContainerName": "vhds",
-        "vmazrhol200NicName": "[concat(parameters('vmazrhol200Name'), 'NetworkInterface')]"
+        "vmazrhol200NicName": "[concat(parameters('vmazrhol200Name'), 'NetworkInterface')]",
+        "lfsinstallScriptFolder": "CustomScripts",
+        "lfsinstallScriptFileName": "lfsinstall.ps1"
     },
   "resources": [
     {
@@ -113,7 +131,7 @@
     },
     {
       "type": "Microsoft.Network/networkInterfaces",
-      "name": "[parameters('networkInterfaces_nicazrhol200_name')]",
+      "name": "[parameters('nicazrhol200Name')]",
       "apiVersion": "2016-03-30",
       "location": "westeurope",
       "tags": {
@@ -127,10 +145,10 @@
               "privateIPAddress": "10.0.0.4",
               "privateIPAllocationMethod": "Dynamic",
               "publicIPAddress": {
-                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_pipazrhol200_name'))]"
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('pipazrhol200Name'))]"
               },
               "subnet": {
-                "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_vnetazrhol200_name')), '/subnets/Subnet-1')]"
+                "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('vnetazrhol200Name')), '/subnets/Subnet-1')]"
               }
             }
           }
@@ -140,19 +158,19 @@
         },
         "enableIPForwarding": false,
         "networkSecurityGroup": {
-          "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_NSGAZRHOL200_name'))]"
+          "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('NSGAZRHOL200_name'))]"
         }
       },
       "resources": [ ],
       "dependsOn": [
-        "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_pipazrhol200_name'))]",
-        "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_vnetazrhol200_name'))]",
-        "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_NSGAZRHOL200_name'))]"
+        "[resourceId('Microsoft.Network/publicIPAddresses', variables('pipazrhol200Name'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnetazrhol200Name'))]",
+        "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('NSGAZRHOL200_name'))]"
       ]
     },
     {
       "type": "Microsoft.Network/networkSecurityGroups",
-      "name": "[parameters('networkSecurityGroups_NSGAZRHOL200_name')]",
+      "name": "[parameters('NSGAZRHOL200_name')]",
       "apiVersion": "2016-03-30",
       "location": "westeurope",
       "properties": {
@@ -167,6 +185,19 @@
               "destinationAddressPrefix": "*",
               "access": "Allow",
               "priority": 100,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "RDP",
+            "properties": {
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "3389",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 110,
               "direction": "Inbound"
             }
           }
@@ -235,7 +266,33 @@
             }
           ]
         }
-      }
+      },
+        "resources": [
+            {
+                "name": "lfsinstall",
+                "type": "extensions",
+                "location": "[resourceGroup().location]",
+                "apiVersion": "2015-06-15",
+                "dependsOn": [
+                    "[concat('Microsoft.Compute/virtualMachines/', parameters('vmazrhol200Name'))]"
+                ],
+                "tags": {
+                    "displayName": "lfsinstall"
+                },
+                "properties": {
+                    "publisher": "Microsoft.Compute",
+                    "type": "CustomScriptExtension",
+                    "typeHandlerVersion": "1.4",
+                    "autoUpgradeMinorVersion": true,
+                    "settings": {
+                        "fileUris": [
+                            "[concat(parameters('_artifactsLocation'), '/', variables('lfsinstallScriptFolder'), '/', variables('lfsinstallScriptFileName'), parameters('_artifactsLocationSasToken'))]"
+                        ],
+                        "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ', variables('lfsinstallScriptFolder'), '/', variables('lfsinstallScriptFileName'))]"
+                    }
+                }
+            }
+        ]
     }
   ],
     "outputs": {
